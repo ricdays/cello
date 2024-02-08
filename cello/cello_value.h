@@ -20,6 +20,7 @@
 #pragma once
 
 #include "cello_update_source.h"
+#include "cello_object.h"
 
 namespace cello
 {

@@ -20,6 +20,9 @@
 #include "JuceHeader.h"
 
 #include "cello_object.h"
+#include "cello_path.h"
+#include "cello_query.h"
+#include "cello_value.h"
 
 namespace cello
 {
