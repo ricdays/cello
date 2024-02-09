@@ -27,7 +27,7 @@
 namespace cello
 {
 
-Object::Object (const juce::String& type, const Object* state)
+Object::Object (const juce::Identifier& type, const Object* state)
 : Object { type, (state != nullptr ? static_cast<juce::ValueTree> (*state)
                                    : juce::ValueTree ()) }
 {
@@ -35,18 +35,18 @@ Object::Object (const juce::String& type, const Object* state)
         undoManager = state->getUndoManager ();
 }
 
-Object::Object (const juce::String& type, const Object& state)
+Object::Object (const juce::Identifier& type, const Object& state)
 : Object (type, &state)
 {
 }
 
 #define PATH_IMPL 1
-Object::Object (const juce::String& type, juce::ValueTree tree)
+Object::Object (const juce::Identifier& type, juce::ValueTree tree)
 {
     wrap (type, static_cast<juce::ValueTree> (tree));
 }
 
-Object::Object (const juce::String& type, juce::File file, Object::FileFormat format)
+Object::Object (const juce::Identifier& type, juce::File file, Object::FileFormat format)
 : Object { type, Object::load (file, format) }
 {
 }
@@ -341,11 +341,11 @@ juce::Result Object::save (juce::File file, FileFormat format) const
     return juce::Result::fail ("Unknown file format");
 }
 
-Object::CreationType Object::wrap (const juce::String& type, juce::ValueTree tree)
+Object::CreationType Object::wrap (const juce::Identifier& type, juce::ValueTree tree)
 {
     creationType = CreationType::wrapped;
 #if PATH_IMPL
-    Path path { type };
+    Path path { type.toString() };
     // DBG(tree.toXmlString());
     data = path.findValueTree (tree, Path::SearchType::createAll, nullptr);
     // DBG(data.toXmlString());

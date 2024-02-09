@@ -62,7 +62,7 @@ public:
      * @param type
      * @param state pointer to a cello::Object; pass nullptr to default initialize.
      */
-    Object (const juce::String& type, const Object* state);
+    Object (const juce::Identifier& type, const Object* state);
 
     /**
      * @brief Construct a new Object, initializing from the `state` argument.
@@ -71,7 +71,7 @@ public:
      * @param type
      * @param state
      */
-    Object (const juce::String& type, const Object& state);
+    Object (const juce::Identifier& type, const Object& state);
 
     /**
      * @brief Construct a new Object from a raw juce ValueTree. Its behavior
@@ -85,7 +85,7 @@ public:
      * @param type
      * @param tree
      */
-    Object (const juce::String& type, juce::ValueTree tree);
+    Object (const juce::Identifier& type, juce::ValueTree tree);
 
     /**
      * @brief Construct a new Object by attempting to load it from a file on disk.
@@ -97,7 +97,7 @@ public:
      * @param file
      * @param format
      */
-    Object (const juce::String& type, juce::File file,
+    Object (const juce::Identifier& type, juce::File file,
             FileFormat format = FileFormat::xml);
 
     /**
@@ -521,7 +521,7 @@ private:
      * @param tree
      * @return CreationType
      */
-    CreationType wrap (const juce::String& type, juce::ValueTree tree);
+    CreationType wrap (const juce::Identifier& type, juce::ValueTree tree);
 
     /**
      * @brief Handle property changes in this tree by calling a registered
