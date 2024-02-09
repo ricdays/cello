@@ -172,6 +172,27 @@ public:
     Cached getCached () { return Cached (*this); }
 
     /**
+     * @brief Get the underlying cello::Object that owns this Value.
+     *
+     * @return Object&
+     */
+    Object& getObject() const { return object; }
+
+    /**
+     * @brief Get the underlying ValueTree for this Value.
+     *
+     * @return juce::ValueTree
+     */
+    juce::ValueTree getObjectTree() const { return object; }
+
+    /**
+     * @brief Get the UndoManager associated with the underlying ValueTree.
+     *
+     * @return juce::UndoManager*
+     */
+    juce::UndoManager* getUndoManager() const { return object.getUndoManager(); }
+
+    /**
      * @brief We define the signature of a 'validator' function that
      * can validate/modify/replace values as your application requires.
      *
