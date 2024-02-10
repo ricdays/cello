@@ -354,6 +354,14 @@ public:
     void move (int fromIndex, int toIndex);
 
     /**
+     * @brief Returns the index of the given child tree in this object
+     * or -1 if it's not a child.
+     *
+     * @param childTree tree to search for
+     */
+    int indexOf(const juce::ValueTree& childTree) const noexcept;
+
+    /**
      * @brief Sort this object's children using the provided comparison object.
      *
      * The `comp` object must contain a method that uses the signature:
@@ -523,6 +531,7 @@ private:
      */
     CreationType wrap (const juce::Identifier& type, juce::ValueTree tree);
 
+protected:
     /**
      * @brief Handle property changes in this tree by calling a registered
      * callback function for the property that changed (if one was registered).
@@ -536,7 +545,7 @@ private:
      * @param treeWhosePropertyHasChanged
      * @param property
      */
-    void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
+    virtual void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
                                    const juce::Identifier& property) override;
 
     /**
@@ -545,7 +554,7 @@ private:
      * @param parentTree
      * @param childTree
      */
-    void valueTreeChildAdded (juce::ValueTree& parentTree,
+    virtual void valueTreeChildAdded (juce::ValueTree& parentTree,
                               juce::ValueTree& childTree) override;
 
     /**
@@ -555,7 +564,7 @@ private:
      * @param childTree
      * @param index
      */
-    void valueTreeChildRemoved (juce::ValueTree& parentTree, juce::ValueTree& childTree,
+    virtual void valueTreeChildRemoved (juce::ValueTree& parentTree, juce::ValueTree& childTree,
                                 int index) override;
 
     /**
@@ -565,7 +574,7 @@ private:
      * @param oldIndex
      * @param newIndex
      */
-    void valueTreeChildOrderChanged (juce::ValueTree& childTree, int oldIndex,
+    virtual void valueTreeChildOrderChanged (juce::ValueTree& childTree, int oldIndex,
                                      int newIndex) override;
 
     /**
@@ -573,14 +582,14 @@ private:
      *
      * @param tree
      */
-    void valueTreeParentChanged (juce::ValueTree& tree) override;
+    virtual void valueTreeParentChanged (juce::ValueTree& tree) override;
 
     /**
      * @brief will execute the `onRedirected` callback if it exists.
      *
      * @param tree
      */
-    void valueTreeRedirected (juce::ValueTree& tree) override;
+    virtual void valueTreeRedirected (juce::ValueTree& tree) override;
 
 protected:
     ///  The tree where our data lives.

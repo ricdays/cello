@@ -160,6 +160,8 @@ public:
 
         operator T () const { return cachedValue; }
 
+        T* operator->() noexcept { return &cachedValue; }
+
     private:
         Value<T>& value;
         T cachedValue;
@@ -406,6 +408,44 @@ T operator-- (Value<T>& val, int)
     return original;
 }
 
+template <typename T> 
+class CachedValue
+    : public Value<T>
+{
+public:
+    CachedValue (Object& data, const juce::Identifier& id_, T initVal = {})
+        : Value<T> { data, id_, initVal }
+        , cachedValue { static_cast<T> (*this) }
+    {
+        this->onPropertyChange ([this] (juce::Identifier)
+                                { cachedValue = static_cast<T> (*this); });
+    }
+
+    ~CachedValue () { this->onPropertyChange (nullptr); }
+
+    operator T () const { return cachedValue; }
+
+    T* operator->() noexcept { return &cachedValue; }
+
+    // Returns a copy of the cached value
+    T get() { return cachedValue; }
+
+    void set (const T& val)
+    {
+        Value<T>::set (val);
+        cachedValue = val;
+    }
+
+    CachedValue& operator= (const T& val)
+    {
+        set (val);
+        return *this;
+    }
+
+private:
+    T cachedValue;
+};
+
 } // namespace cello
 
 /**
@@ -415,6 +455,17 @@ T operator-- (Value<T>& val, int)
  */
 #define MAKE_VALUE_MEMBER(type, name, init) \
     cello::Value<type> name                 \
+    {                                       \
+        *this, #name, init                  \
+    }
+
+/**
+ * @brief a useful macro to create and default initialize a cello::Value
+ * as a member of a cello::Object, using the same name for the variable
+ * as the identifier used for the property in its ValueTree.
+ */
+#define MAKE_CACHED_VALUE_MEMBER(type, name, init) \
+    cello::CachedValue<type> name                 \
     {                                       \
         *this, #name, init                  \
     }

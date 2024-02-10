@@ -236,6 +236,12 @@ void Object::move (int fromIndex, int toIndex)
     data.moveChild (fromIndex, toIndex, getUndoManager ());
 }
 
+int Object::indexOf(const juce::ValueTree& childTree) const noexcept
+{
+    return data.indexOf(childTree);
+}
+
+
 template <typename Comparator> void Object::sort (Comparator& comp, bool stableSort)
 {
     data.sort (comp, getUndoManager (), stableSort);
