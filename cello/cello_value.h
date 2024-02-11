@@ -235,7 +235,7 @@ public:
         object.onPropertyChange (getId (), callback);
     }
 
-private:
+protected:
     void doSet (const T& val)
     {
         juce::ValueTree tree { object };
@@ -270,6 +270,8 @@ private:
         juce::ValueTree tree { object };
         return juce::VariantConverter<T>::fromVar (tree.getProperty (id));
     }
+    
+private:
 
     /**
      * @brief Compare some value to our current value; for floating point types, we
@@ -415,10 +417,13 @@ class CachedValue
 public:
     CachedValue (Object& data, const juce::Identifier& id_, T initVal = {})
         : Value<T> { data, id_, initVal }
-        , cachedValue { static_cast<T> (*this) }
+        , cachedValue { Value<T>::doGet() }
     {
+        cachedValue = Value<T>::doGet();
         this->onPropertyChange ([this] (juce::Identifier)
-                                { cachedValue = static_cast<T> (*this); });
+                                { cachedValue = Value<T>::doGet(); });
+
+
     }
 
     ~CachedValue () { this->onPropertyChange (nullptr); }
