@@ -78,6 +78,7 @@ public:
     Value (Object& data, const juce::Identifier& id_, T initVal = {})
     : ValueBase { id_ }
     , object { data }
+    , initialVal { initVal }
     {
         // if the object doesn't have this value yet, add it and set it
         // to the initial value. This will happen as part of initializing a
@@ -116,6 +117,12 @@ public:
             doSet (val);
     }
 
+    T get () const { 
+        if (onGet != nullptr)
+            return onGet (doGet ());
+        return doGet ();
+    }
+
     /**
      * @brief Get the current value of this property from the tree.
      *
@@ -123,9 +130,23 @@ public:
      */
     operator T () const
     {
-        if (onGet != nullptr)
-            return onGet (doGet ());
-        return doGet ();
+        return get();
+    }
+
+    void resetToDefault ()
+    {
+        set (initialVal);
+    }
+
+    T getDefaultValue () const { return initialVal; }
+
+    virtual void setDefaultValue (const T& val) { 
+        initialVal = val;
+    }
+
+    bool isUsingDefault() const
+    {
+        return getObjectTree().hasProperty(getId());
     }
 
     /**
@@ -236,6 +257,7 @@ public:
     }
 
 protected:
+
     void doSet (const T& val)
     {
         juce::ValueTree tree { object };
@@ -270,7 +292,7 @@ protected:
         juce::ValueTree tree { object };
         return juce::VariantConverter<T>::fromVar (tree.getProperty (id));
     }
-    
+
 private:
 
     /**
@@ -299,6 +321,9 @@ private:
 
     /// pointer to a listener to exclude from property change callbacks.
     juce::ValueTree::Listener* excludedListener { nullptr };
+
+    /// initial/default value
+    T initialVal;
 };
 
 template <typename T, // the actual type
@@ -410,47 +435,6 @@ T operator-- (Value<T>& val, int)
     return original;
 }
 
-template <typename T> 
-class CachedValue
-    : public Value<T>
-{
-public:
-    CachedValue (Object& data, const juce::Identifier& id_, T initVal = {})
-        : Value<T> { data, id_, initVal }
-        , cachedValue { Value<T>::doGet() }
-    {
-        cachedValue = Value<T>::doGet();
-        this->onPropertyChange ([this] (juce::Identifier)
-                                { cachedValue = Value<T>::doGet(); });
-
-
-    }
-
-    ~CachedValue () { this->onPropertyChange (nullptr); }
-
-    operator T () const { return cachedValue; }
-
-    T* operator->() noexcept { return &cachedValue; }
-
-    // Returns a copy of the cached value
-    T get() { return cachedValue; }
-
-    void set (const T& val)
-    {
-        Value<T>::set (val);
-        cachedValue = val;
-    }
-
-    CachedValue& operator= (const T& val)
-    {
-        set (val);
-        return *this;
-    }
-
-private:
-    T cachedValue;
-};
-
 } // namespace cello
 
 /**
@@ -460,17 +444,6 @@ private:
  */
 #define MAKE_VALUE_MEMBER(type, name, init) \
     cello::Value<type> name                 \
-    {                                       \
-        *this, #name, init                  \
-    }
-
-/**
- * @brief a useful macro to create and default initialize a cello::Value
- * as a member of a cello::Object, using the same name for the variable
- * as the identifier used for the property in its ValueTree.
- */
-#define MAKE_CACHED_VALUE_MEMBER(type, name, init) \
-    cello::CachedValue<type> name                 \
     {                                       \
         *this, #name, init                  \
     }

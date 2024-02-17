@@ -126,6 +126,16 @@ public:
         jassert(_objects.size() == 0); // must call freeObjects() first
     }
 
+
+    /**
+     * @brief Clears the object list, removing all elements.
+     */
+    void clear()
+    {
+        while (objectCount() > 0)
+            removeObject(getObject(0));
+    }
+
     /**
      * Returns the number of objects in the internal object list.
      *
@@ -145,9 +155,24 @@ public:
     ObjectType* getObject(int index) const
     {
         if (index < 0 || index >= _objects.size())
+        {
+            jassertfalse;
             return nullptr;
+        }
 
         return _objects[index];
+    }
+
+    void removeObject(ObjectType* obj)
+    {
+        juce::ValueTree parent = *this;
+		parent.removeChild(*obj, getUndoManager());
+    }
+
+    void removeAllChildren()
+    {
+        juce::ValueTree parent = *this;
+        parent.removeAllChildren(getUndoManager());
     }
 
     /**
@@ -158,6 +183,48 @@ public:
     const juce::OwnedArray<ObjectType>& objectList() const
     {
         return _objects;
+    }
+
+    void move(int oldIndex, int newIndex)
+    {
+        int n = _objects.size();
+        if (oldIndex < 0 || oldIndex >= n)
+            return;
+
+        if (newIndex < 0 || newIndex >= n)
+            return;
+
+        if (oldIndex == newIndex)
+            return;
+
+        juce::ValueTree parent = *this;
+        parent.moveChild(oldIndex, newIndex, getUndoManager());
+    }
+
+    void moveUp(int index)
+    {
+        if (index < 1 || index >= _objects.size())
+            return;
+
+        move(index, index - 1);
+    }
+
+    void moveDown(int index)
+    {
+        if (index < 0 || index >= _objects.size() - 1)
+            return;
+
+        move(index, index + 1);
+    }
+
+    void moveUp(ObjectType* obj)
+    {
+        moveUp(_objects.indexOf(obj));
+    }
+
+    void moveDown(ObjectType* obj)
+    {
+        moveDown(_objects.indexOf(obj));
     }
 
 protected:
@@ -292,19 +359,19 @@ private:
     {
         Object::valueTreeChildRemoved(parentTree, childTree, index);
 
-        if (childTree != *this)
+        if (parentTree != *this)
             return;
 
         if (ObjectType* o = getObject(index))
         {
-            _objects.removeObject(o);
+            _objects.removeObject(o, false);
             onObjectRemoved(*o);
             delete o;
         }
     }
 
     /**
-     * @brief will execute the callback `objectOrderChanged` if it exists.
+     * @brief will execute the callback `onObjectOrderChanged` if it exists.
      *
      * @param parentTree
      * @param oldIndex
@@ -314,7 +381,7 @@ private:
     {
         Object::valueTreeChildOrderChanged(childTree, oldIndex, newIndex);
 
-        if (childTree != *this)
+        if (childTree.getParent() != *this)
             return;
 
         _objects.sort(*this);

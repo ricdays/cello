@@ -259,6 +259,11 @@ void Object::onPropertyChange (juce::Identifier id, PropertyUpdateFn callback)
     {
         if (updater.id == id)
         {
+            // This property has already been registered with a callback before
+            // Is this really what we want to do?
+            if (callback)
+                jassertfalse;
+            
             updater.fn = callback;
             return;
         }
