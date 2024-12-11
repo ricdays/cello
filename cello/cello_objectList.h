@@ -255,17 +255,37 @@ protected:
      * This function should be called by derived classes to populate the list with objects.
      * It should only be called once at construction time.
      */
-    void rebuildObjects()
+    void rebuildObjects(bool deleteInvalidChildren = true)
     {
         jassert(_objects.size() == 0); // must only call this method once at construction
         _objects.clear();
+        std::vector<int> invalidChildrenIndexes;
         for (const auto& v : *this)
         {
             auto type = v.getType();
             auto typeString = type.toString();
+            ObjectType* newObject = nullptr;
             if (isValidAsChild(v))
-                if (ObjectType* newObject = createNewObject(v))
-                    _objects.add(newObject);
+            {
+                newObject = createNewObject(v);
+            }
+
+            if (newObject)
+                _objects.add(newObject);
+            else
+            {
+                invalidChildrenIndexes.push_back(indexOf(v));
+            }
+        }
+
+        if (deleteInvalidChildren)
+        {
+            // Reverse the order of the indexes to remove to avoid invalidating them
+            std::sort(invalidChildrenIndexes.begin(), invalidChildrenIndexes.end(), std::greater<>());
+            for (int i : invalidChildrenIndexes)
+            {
+                remove(i);
+            }
         }
     }
 
